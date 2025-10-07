@@ -1,4 +1,4 @@
-# Ecommerce app Backend (Sellx)
+# Ecommerce app Backend (Forager)
 =======
 # Setup -- TypeScript x Express x Node.js
 
