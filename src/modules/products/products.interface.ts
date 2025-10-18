@@ -5,7 +5,7 @@ export interface IProduct {
     category: "womens_clothes" | "mens_clothes" | "health/beauty" | "purses" | "accessories",
     sub_category: string | null
     images: string[],
-    brand: string,
+    brand: ObjectId,
     price: number,
     quantity: number,
     details: string,

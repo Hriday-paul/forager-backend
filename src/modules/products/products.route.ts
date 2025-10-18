@@ -17,12 +17,13 @@ router.post("/",
     req_validator(),
     productControler.addProduct);
 
-router.get('/', productQueryChecker, req_validator(), productControler.allProducts);
+router.get('/', auth(USER_ROLE.user), productQueryChecker, req_validator(), productControler.allProducts);
 
 router.get('/my-products', auth(USER_ROLE.user), productQueryChecker, req_validator(), productControler.myProducts);
 
 router.get('/store-products/:id', productControler.storeProducts);
 router.get('/store-popular-products/:id', productControler.getMostFavouriteProductsByStore);
+router.get('/listing-count', auth(USER_ROLE.user), productControler.listingCount);
 
 router.get('/:id', auth(USER_ROLE.user, USER_ROLE.admin), productControler.singleProduct);
 

@@ -62,7 +62,7 @@ export const sendNotification = async (
             title: payload.title,
             link: payload?.link || null,
             message: payload?.message,
-            type: payload?.type || "accept",
+            type: payload?.type,
           })
         )
       );

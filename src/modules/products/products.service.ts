@@ -84,7 +84,7 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
                     $ifNull: [{ $arrayElemAt: ["$reviewStats.reviewCount", 0] }, 0]
                 },
                 isCouldNotFindRequested: {
-                    $in: [new ObjectId(userId), "$could_not_find_reqs"],
+                    $in: [new ObjectId(userId), "$could_not_find_reqs"]
                 },
                 isBoughtRequested: {
                     $gt: [
@@ -102,6 +102,75 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
                 }
             }
         },
+
+        {
+            $lookup: {
+                from: "stores",
+                localField: "store",
+                foreignField: "_id",
+                as: "store"
+            }
+        },
+        { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+
+        {
+            $lookup: {
+                from: "brands",
+                let: { brandId: "$brand" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$_id", "$$brandId"] },
+                                    { $eq: ["$status", "approved"] }
+                                ]
+                            }
+                        }
+                    },
+                    { $project: { name: 1, _id: 1 } }
+                ],
+                as: "brand"
+            }
+        },
+        {
+            $addFields: {
+                brand: {
+                    $cond: [
+                        { $gt: [{ $size: "$brand" }, 0] },
+                        { $arrayElemAt: ["$brand", 0] },
+                        null
+                    ]
+                }
+            }
+        },
+
+        {
+            $lookup: {
+                from: "favourites",
+                let: { productId: "$_id", userId: new ObjectId(userId) },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product", "$$productId"] },
+                                    { $eq: ["$user", "$$userId"] },
+                                ]
+                            }
+                        }
+                    },
+                    { $limit: 1 } // we only need to know if it exists
+                ],
+                as: "favouriteStatus"
+            }
+        },
+        {
+            $addFields: {
+                isFavourite: { $gt: [{ $size: "$favouriteStatus" }, 0] }
+            }
+        },
+        { $unset: "favouriteStatus" },
 
         // 4. Pagination
         { $skip: skip },
@@ -198,6 +267,38 @@ const myProducts = async (query: Record<string, any>, userId: string) => {
                         },
                         0,
                     ],
+                }
+            }
+        },
+
+        {
+            $lookup: {
+                from: "brands",
+                let: { brandId: "$brand" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$_id", "$$brandId"] },
+                                    { $eq: ["$status", "approved"] }
+                                ]
+                            }
+                        }
+                    },
+                    { $project: { name: 1, _id: 1 } }
+                ],
+                as: "brand"
+            }
+        },
+        {
+            $addFields: {
+                brand: {
+                    $cond: [
+                        { $gt: [{ $size: "$brand" }, 0] },
+                        { $arrayElemAt: ["$brand", 0] },
+                        null
+                    ]
                 }
             }
         },
@@ -315,6 +416,38 @@ const singleProduct = async (productId: string, userId: string) => {
             },
         },
 
+        {
+            $lookup: {
+                from: "brands",
+                let: { brandId: "$brand" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$_id", "$$brandId"] },
+                                    { $eq: ["$status", "approved"] }
+                                ]
+                            }
+                        }
+                    },
+                    { $project: { name: 1, _id: 1 } }
+                ],
+                as: "brand"
+            }
+        },
+        {
+            $addFields: {
+                brand: {
+                    $cond: [
+                        { $gt: [{ $size: "$brand" }, 0] },
+                        { $arrayElemAt: ["$brand", 0] },
+                        null
+                    ]
+                }
+            }
+        },
+
         { $unset: "reviewStats" },
 
         { $limit: 1 },
@@ -415,6 +548,38 @@ const storeProducts = async (query: Record<string, any>, storeId: string) => {
                 },
                 reviewCount: {
                     $ifNull: [{ $arrayElemAt: ["$reviewStats.reviewCount", 0] }, 0]
+                }
+            }
+        },
+
+        {
+            $lookup: {
+                from: "brands",
+                let: { brandId: "$brand" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$_id", "$$brandId"] },
+                                    { $eq: ["$status", "approved"] }
+                                ]
+                            }
+                        }
+                    },
+                    { $project: { name: 1, _id: 1 } }
+                ],
+                as: "brand"
+            }
+        },
+        {
+            $addFields: {
+                brand: {
+                    $cond: [
+                        { $gt: [{ $size: "$brand" }, 0] },
+                        { $arrayElemAt: ["$brand", 0] },
+                        null
+                    ]
                 }
             }
         },
@@ -721,6 +886,11 @@ const boughtReq = async (productId: string, userId: string, payload: { type: "av
     return product;
 };
 
+const listingCount = async (userId: string) => {
+    const res = await Products.countDocuments({ user: userId, isDeleted: false });
+    return res;
+}
+
 export const productService = {
     addProduct,
     allProducts,
@@ -732,5 +902,6 @@ export const productService = {
     singleProduct,
     sendNotificationAfterAddProduct,
     couldNotFindReq,
-    boughtReq
+    boughtReq,
+    listingCount
 }

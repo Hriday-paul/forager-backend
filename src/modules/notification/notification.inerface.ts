@@ -12,7 +12,7 @@ export interface INotification {
   product ?: mongoId
   message: string;
   fcmToken?: string;
-  type?: "accept" | "reject" | "cancelled" | "payment";
+  type?: "text" | "accept" | "reject" | "cancelled" | "payment" | "product";
   title?: string;
   isRead?: boolean;
   link?: string;

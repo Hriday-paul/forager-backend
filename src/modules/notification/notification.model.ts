@@ -33,7 +33,7 @@ const NotificationSchema = new Schema<INotification>(
 
     type: {
       type: String,
-      default: "accept",
+      default: "text",
 
     },
 

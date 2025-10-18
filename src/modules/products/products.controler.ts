@@ -164,6 +164,16 @@ const sendNotificationAfterAddProduct = catchAsync(async (req, res) => {
     });
 });
 
+const listingCount = catchAsync(async (req, res) => {
+    const result = await productService.listingCount(req.user._id);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'listing count',
+        data: result,
+    });
+});
+
 export const productControler = {
     addProduct,
     allProducts,
@@ -175,5 +185,6 @@ export const productControler = {
     boughtReq,
     getMostFavouriteProductsByStore,
     singleProduct,
-    sendNotificationAfterAddProduct
+    sendNotificationAfterAddProduct,
+    listingCount
 }

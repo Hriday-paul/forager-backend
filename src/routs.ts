@@ -11,6 +11,9 @@ import { bannerRouts } from './modules/banner/banner.route';
 import { notificationRoute } from './modules/notification/notification.routes';
 import { favouriteRouts } from './modules/favourites/favourites.rout';
 import { StoreRouts } from './modules/store/store.rout';
+import { searchRouts } from './modules/searches/searches.rout';
+import { brandRouts } from './modules/brands/brands.rout';
+import { reportRouts } from './modules/reports/reports.rout';
 
 const router = express.Router();
 
@@ -58,6 +61,18 @@ const moduleRoutes = [
     {
         path: '/stores',
         route: StoreRouts,
+    },
+    {
+        path: '/notification-reminder',
+        route: searchRouts,
+    },
+    {
+        path: '/brands',
+        route: brandRouts,
+    },
+    {
+        path: '/reports',
+        route: reportRouts,
     },
 ];
 

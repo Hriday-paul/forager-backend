@@ -11,7 +11,7 @@ export const addProductValidator = [
   check('sizes').trim().isArray(),
   check('colors').trim().isArray(),
   check('sub_category').trim().isString(),
-  check('brand').trim().isString(),
+  check('brand').trim().isMongoId().withMessage("brand invalid"),
 
 ]
 

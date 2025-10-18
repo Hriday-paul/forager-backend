@@ -36,7 +36,7 @@ const ProductSchema: Schema<IProduct> = new Schema(
         // },
         category: { type: String, enum: ["womens_clothes", "mens_clothes", "health/beauty", "purses", "accessories"], required: true },
         sub_category: { type: String },
-        brand: { type: String, required: true },
+        brand: { type: Schema.Types.ObjectId, ref: 'brands'},
         isDeleted: { type: Boolean, default: false },
 
         user: { type: Schema.Types.ObjectId, ref: 'users', required: true },

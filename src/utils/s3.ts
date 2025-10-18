@@ -7,6 +7,7 @@ import httpStatus from 'http-status';
 import AppError from '../error/AppError';
 import config from '../config';
 import { s3Client } from '../constants/aws';
+
 import multer, { memoryStorage } from "multer";
 
 const storage = memoryStorage();
@@ -26,31 +27,28 @@ export const image_Upload = multer({
 });
 
 //upload a single file
-export const uploadToS3 = async ({
-  file,
-  fileName,
-}: {
-  file: any;
-  fileName: string;
-}): Promise<string | null> => {
-
+export const uploadToS3 = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  { file, fileName }: { file: any; fileName: string },
+): Promise<string | null> => {
   const command = new PutObjectCommand({
     Bucket: config.aws.bucket,
     Key: fileName,
     Body: file.buffer,
     ContentType: file.mimetype,
-    ACL: "public-read",
   });
 
   try {
-    await s3Client.send(command);
+    const key = await s3Client.send(command);
+    if (!key) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'File Upload failed');
+    }
 
-    const url = `https://${config.aws.bucket}.${config.aws.spacesEndpoint}/${fileName}`;
+    const url = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${fileName}`;
 
     return url;
-  } catch (error: any) {
-    console.error("S3 Upload Error:", error);
-    throw new AppError(httpStatus.BAD_REQUEST, `File Upload failed: ${error.message}`);
+  } catch (error) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'File Upload failed');
   }
 };
 
@@ -79,6 +77,7 @@ export const uploadManyToS3 = async (
   }[],
 ): Promise<{ url: string; key: string }[]> => {
   try {
+
     const uploadPromises = files.map(async ({ file, path, key }) => {
       const newFileName = key
         ? key
@@ -89,20 +88,18 @@ export const uploadManyToS3 = async (
         Bucket: config.aws.bucket as string,
         Key: fileKey,
         Body: file?.buffer,
-        ACL: "public-read",
       });
 
       await s3Client.send(command);
 
-      // const url = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${fileKey}`;
-      const url = `https://${config.aws.bucket}.${config.aws.spacesEndpoint}/${fileKey}`;
+      const url = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${fileKey}`;
       return { url, key: newFileName };
     });
 
     const uploadedUrls = await Promise.all(uploadPromises);
     return uploadedUrls;
   } catch (error) {
-    console.log("upload eroor---------------------", error)
+    console.log(error)
     throw new Error('File Upload failed');
   }
 };
