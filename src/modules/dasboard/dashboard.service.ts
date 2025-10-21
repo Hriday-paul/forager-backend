@@ -1,8 +1,6 @@
 import moment from "moment";
 import { User } from "../user/user.models";
 
-import { Products } from "../products/products.model";
-
 
 const userChart = async (query: Record<string, any>) => {
     const userYear = query?.JoinYear ?? moment().year();

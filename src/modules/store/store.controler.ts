@@ -36,6 +36,19 @@ const addStore = catchAsync(async (req, res) => {
     });
 })
 
+
+const allStores = catchAsync(async (req, res) => {
+    const result = await storeService.allStores(req.query)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'stores retrived successfully',
+        data: result,
+    });
+
+})
+
 const myStoreAccount = catchAsync(async (req, res) => {
     const result = await storeService.myStoreAccount(req.user._id)
 
@@ -69,10 +82,33 @@ const nearMeStores = catchAsync(async (req, res) => {
     });
 
 })
+const approveStoreStatus = catchAsync(async (req, res) => {
+    const result = await storeService.approveStoreStatus(req.params.id)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'store approved successfully',
+        data: result,
+    });
+})
+const rejectStoreStatus = catchAsync(async (req, res) => {
+    const result = await storeService.rejectStoreStatus(req.params.id)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'store approved successfully',
+        data: result,
+    });
+})
 
 export const storeControler = {
     addStore,
+    allStores,
     myStoreAccount,
     storeDetails,
-    nearMeStores
+    nearMeStores,
+    approveStoreStatus,
+    rejectStoreStatus
 }

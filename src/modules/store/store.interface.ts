@@ -1,4 +1,5 @@
 import { ObjectId } from "mongoose";
+import { IUser } from "../user/user.interface";
 
 export interface IStore {
     name: string,
@@ -10,5 +11,5 @@ export interface IStore {
     location: { type: string, coordinates: number[] },
 
     status: "pending" | "approved" | "rejected",
-    user : ObjectId
+    user : IUser
 }

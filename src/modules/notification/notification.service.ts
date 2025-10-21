@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import QueryBuilder from "../../builder/QueryBuilder";
 import { INotification } from "./notification.inerface";
 import Notification from "./notification.model";
 
 const getNotificationFromDb = async (query: Record<string, any>) => {
-  const result = await Notification.find({ isRead: false }).sort("-createdAt").populate('product');
-  return result;
+
+  const notificationModel = new QueryBuilder(Notification.find().populate('product'), query).sort();
+      const data: any = await notificationModel.modelQuery;
+      const meta = await notificationModel.countTotal();
+      return {
+          data,
+          meta,
+      };
 };
 
 const updateNotification = async (

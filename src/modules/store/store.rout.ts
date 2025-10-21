@@ -27,11 +27,16 @@ router.post('/',
     storeControler.addStore
 );
 
+router.get("/", auth(USER_ROLE.admin), storeControler.allStores);
+
 router.get("/my-store", auth(USER_ROLE.user), storeControler.myStoreAccount)
 
 router.get("/near-me-stores", auth(USER_ROLE.user), storeControler.nearMeStores)
 
+router.patch("/approve/:id", auth(USER_ROLE.admin), storeControler.approveStoreStatus);
+router.patch("/reject/:id", auth(USER_ROLE.admin), storeControler.rejectStoreStatus);
 
-router.get("/:id", storeControler.storeDetails)
+
+router.get("/:id", storeControler.storeDetails);
 
 export const StoreRouts = router;

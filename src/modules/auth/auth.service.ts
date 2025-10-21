@@ -111,11 +111,11 @@ const loginUser = async (payload: { email: string, password: string, fcmToken?: 
             });
         }
 
-        sendAdminNotifications({
-            sender: user._id,
-            message: `${user.first_name} log in successful! And the email is ${payload.email}`,
-            title: `New user login to his account`,
-        });
+        // sendAdminNotifications({
+        //     sender: user._id,
+        //     message: `${user.first_name} log in successful! And the email is ${payload.email}`,
+        //     title: `New user login to his account`,
+        // });
 
     }
 

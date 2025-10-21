@@ -4,6 +4,8 @@ import { User } from "../user/user.models";
 import { IStore } from "./store.interface";
 import { Stores } from "./store.model";
 import httpStatus from "http-status";
+import QueryBuilder from "../../builder/QueryBuilder";
+import { sendNotification } from "../notification/notification.utils";
 
 const createStore = async (payload: IStore, userId: string) => {
 
@@ -22,6 +24,67 @@ const createStore = async (payload: IStore, userId: string) => {
     const store = await Stores.create({ ...more_payloads, user: userId })
 
     return store;
+}
+
+//get all stores
+const allStores = async (query: Record<string, any>) => {
+    const storeModel = new QueryBuilder(Stores.find(), query)
+        .search(['name', 'address'])
+        .paginate()
+        .sort();
+    const data: any = await storeModel.modelQuery;
+    const meta = await storeModel.countTotal();
+    return {
+        data,
+        meta,
+    };
+}
+
+// approve store
+const approveStoreStatus = async (storeId: string) => {
+    const exist = await Stores.findById(storeId).populate("user");
+    if (!exist) {
+        throw new AppError(httpStatus.NOT_FOUND, "Store not found")
+    }
+    const res = await Stores.updateOne({ _id: storeId }, { status: "approved" });
+
+    const tokenToUse = exist?.user?.fcmToken
+
+    if (tokenToUse && exist?.user?.notification) {
+        sendNotification([tokenToUse], {
+            title: `Your store account approved successfully ✅`,
+            message: `Hello ${exist?.user?.first_name}, your requested store account approved from the FORAGER admin. You can now upload product in your store account and display products to user throw our app`,
+            receiver: exist?.user?._id,
+            receiverEmail: exist?.user?.email,
+            receiverRole: exist?.user?.role,
+            sender: exist?.user?._id,
+        });
+    }
+    return res;
+}
+
+// reject store
+const rejectStoreStatus = async (storeId: string) => {
+    const exist = await Stores.findById(storeId).populate("user");;
+    if (!exist) {
+        throw new AppError(httpStatus.NOT_FOUND, "Store not found")
+    }
+    const res = await Stores.updateOne({ _id: storeId }, { status: "rejected" });
+
+    const tokenToUse = exist?.user?.fcmToken
+
+    if (tokenToUse && exist?.user?.notification) {
+        sendNotification([tokenToUse], {
+            title: `Your store account request rejected ❌`,
+            message: `Hello ${exist?.user?.first_name}, your requested store account rejected from the FORAGER admin. Please, provide valid information for approval`,
+            receiver: exist?.user?._id,
+            receiverEmail: exist?.user?.email,
+            receiverRole: exist?.user?.role,
+            sender: exist?.user?._id,
+        });
+    }
+
+    return res;
 }
 
 const myStoreAccount = async (userId: string) => {
@@ -107,6 +170,15 @@ const storeDetails = async (storeId: string) => {
             }
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "user",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+        {
             $addFields: {
                 avgRating: {
                     $ifNull: [{ $arrayElemAt: ["$reviewStats.avgRating", 0] }, 0]
@@ -118,9 +190,8 @@ const storeDetails = async (storeId: string) => {
         },
     ]);
 
-    return res;
+    return res?.length > 0 ? res[0] : {};
 }
-
 
 const nearMeStores = async (userId: string) => {
     const user = await User.findOne({ _id: userId });
@@ -198,7 +269,10 @@ const nearMeStores = async (userId: string) => {
 
 export const storeService = {
     createStore,
+    allStores,
     myStoreAccount,
     storeDetails,
-    nearMeStores
+    nearMeStores,
+    approveStoreStatus,
+    rejectStoreStatus
 }

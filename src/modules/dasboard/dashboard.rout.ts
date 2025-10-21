@@ -10,6 +10,6 @@ router.get('/userChart', auth(USER_ROLE.admin),  dashboardControler.userChart);
 
 router.get('/earningChart', auth(USER_ROLE.admin),  dashboardControler.earningChart);
 
-router.get('/count', auth(USER_ROLE.admin), dashboardControler.countData);
+router.get('/stats', auth(USER_ROLE.admin), dashboardControler.countData);
 
 export const dashboardRouts = router
