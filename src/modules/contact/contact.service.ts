@@ -71,7 +71,7 @@ const replyContact = async (id: string, message: string) => {
 
 const getAllcontact = async (query: Record<string, any>) => {
   const contactModel = new QueryBuilder(Contact.find(), query)
-    .search(['fullname', 'email'])
+    .search(['firstName', 'lastName', 'email', 'contact'])
     .filter()
     .paginate()
     .sort();

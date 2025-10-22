@@ -142,7 +142,7 @@ const myStoreAccount = async (userId: string) => {
 const storeDetails = async (storeId: string) => {
 
     const res = await Stores.aggregate([
-        { $match: { _id: new Types.ObjectId(storeId), status: "approved" } },
+        { $match: { _id: new Types.ObjectId(storeId) } },
         {
             $lookup: {
                 from: "reviews",
