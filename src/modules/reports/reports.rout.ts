@@ -9,5 +9,6 @@ const router = Router();
 
 router.post("/", addReportValidator, req_validator(), auth(USER_ROLE.user), reportControler.AddReport);
 router.get("/", auth(USER_ROLE.admin), reportControler.reports);
+router.get("/:id", auth(USER_ROLE.admin), reportControler.singleReport);
 
 export const reportRouts = router;

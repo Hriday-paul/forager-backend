@@ -14,7 +14,7 @@ const addReport = async (payload: IReport, userId: string) => {
 }
 
 const reports = async (query: Record<string, any>) => {
-    const reportModel = new QueryBuilder(Report.find(), query)
+    const reportModel = new QueryBuilder(Report.find().populate({ path: "user", select: "first_name last_name image" }).populate({ path: "product", select: "title images" }), query)
         .search(['reason'])
         .paginate()
         .sort();
@@ -26,7 +26,16 @@ const reports = async (query: Record<string, any>) => {
     };
 }
 
+const singleReport = async (reportId : string) => {
+
+    const reportData = Report.findById(reportId).populate({ path: "user", select: "first_name last_name image" }).populate({ path: "product", populate: { path: "store" } })
+
+    return reportData;
+
+}
+
 export const reportService = {
     addReport,
-    reports
+    reports,
+    singleReport
 }

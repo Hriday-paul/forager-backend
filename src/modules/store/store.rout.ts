@@ -36,6 +36,21 @@ router.get("/near-me-stores", auth(USER_ROLE.user), storeControler.nearMeStores)
 router.patch("/approve/:id", auth(USER_ROLE.admin), storeControler.approveStoreStatus);
 router.patch("/reject/:id", auth(USER_ROLE.admin), storeControler.rejectStoreStatus);
 
+router.patch("/:id",
+    auth(USER_ROLE.admin),
+    image_Upload.fields([
+        {
+            name: "cover_photo",
+            maxCount: 1
+        },
+        {
+            name: "photo",
+            maxCount: 1
+        }
+    ]),
+    parseData(),
+    storeControler.updateStore);
+
 
 router.get("/:id", storeControler.storeDetails);
 

@@ -21,8 +21,18 @@ const reports = catchAsync(async (req, res) => {
         data: result,
     });
 })
+const singleReport = catchAsync(async (req, res) => {
+    const result = await reportService.singleReport(req.params.id)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'report data retrived successfully',
+        data: result,
+    });
+})
 
 export const reportControler = {
     AddReport,
-    reports
+    reports,
+    singleReport
 }

@@ -6,7 +6,7 @@ const BrandSchema: Schema<IBrand> = new Schema(
     {
         name: { type: String, required: true },
         req_user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
-        status: { type: String, enum: ["pending", "approved"], default: "pending" }
+        status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }
     },
     { timestamps: true },
 );

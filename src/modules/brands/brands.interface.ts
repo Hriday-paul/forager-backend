@@ -2,7 +2,8 @@
 import { ObjectId } from "mongoose";
 
 export interface IBrand {
+    _id : ObjectId,
     req_user: ObjectId,
     name: string,
-    status : "pending" | "approved",
+    status : "pending" | "approved" | "rejected",
 }

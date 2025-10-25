@@ -267,6 +267,32 @@ const nearMeStores = async (userId: string) => {
     return stores;
 }
 
+const updateStore = async (payload: IStore, storeId: string) => {
+
+    const { address, cover_photo, name, open_time, photo } = payload
+
+    const updateFields: Partial<IStore> = { address, cover_photo, photo, open_time, name };
+
+    // Remove undefined or null fields to prevent overwriting existing values with null
+    Object.keys(updateFields).forEach((key) => {
+        if (updateFields[key as keyof IStore] === undefined || updateFields[key as keyof IStore] === '' || updateFields[key as keyof IStore] === null) {
+            delete updateFields[key as keyof IStore];
+        }
+    });
+
+    // check updated field found or not
+    if (Object.keys(updateFields).length === 0) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            'No valid field found',
+        );
+    }
+
+    const result = await Stores.updateOne({ _id: storeId }, updateFields)
+
+    return result
+}
+
 export const storeService = {
     createStore,
     allStores,
@@ -274,5 +300,6 @@ export const storeService = {
     storeDetails,
     nearMeStores,
     approveStoreStatus,
-    rejectStoreStatus
+    rejectStoreStatus,
+    updateStore
 }

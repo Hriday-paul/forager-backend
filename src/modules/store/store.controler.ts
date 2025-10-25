@@ -101,6 +101,39 @@ const rejectStoreStatus = catchAsync(async (req, res) => {
         message: 'store approved successfully',
         data: result,
     });
+});
+
+
+const updateStore = catchAsync(async (req, res) => {
+
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+    if (files) {
+        //cover photo
+        if (files?.cover_photo?.length) {
+            req.body.cover_photo = (await uploadToS3({
+                file: files?.cover_photo[0],
+                fileName: `images/user/banner/${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`,
+            })) as string;
+        }
+
+        // store photo
+        if (files?.photo?.length) {
+            req.body.photo = (await uploadToS3({
+                file: files?.photo[0],
+                fileName: `images/user/${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`,
+            })) as string;
+        }
+    }
+
+    const result = await storeService.updateStore(req.body, req.params.id)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'store updated successfully',
+        data: result,
+    });
 })
 
 export const storeControler = {
@@ -110,5 +143,6 @@ export const storeControler = {
     storeDetails,
     nearMeStores,
     approveStoreStatus,
-    rejectStoreStatus
+    rejectStoreStatus,
+    updateStore
 }
