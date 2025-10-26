@@ -6,7 +6,7 @@ import httpStatus from "http-status"
 
 const AddBrand = async (payload: IBrand, userId: string) => {
     //check already exist
-    const exist = await Brand.find({ name: { $regex: name, $options: "i" }, status: "approved" })
+    const exist = await Brand.findOne({ name: { $regex: `^${payload?.name}$`, $options: "i" }, status: "approved" })
     if (exist) {
         throw new AppError(httpStatus.CONFLICT, "Brand already exist based on name")
     }
@@ -16,7 +16,7 @@ const AddBrand = async (payload: IBrand, userId: string) => {
 
 const AddBrandByAdmin = async (payload: IBrand, userId: string) => {
     //check already exist
-    const exist = await Brand.find({ name: { $regex: name, $options: "i" }, status: "approved" })
+    const exist = await Brand.findOne({ name: { $regex: `^${payload?.name}$`, $options: "i" }, status: "approved" })
     if (exist) {
         throw new AppError(httpStatus.CONFLICT, "Brand already exist based on name")
     }

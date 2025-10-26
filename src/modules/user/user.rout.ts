@@ -5,6 +5,7 @@ import { userController } from "./user.controller";
 import { statusUpdateValidator } from "./user.validator";
 import req_validator from "../../middleware/req_validation";
 import { image_Upload } from "../../utils/s3";
+import parseData from "../../middleware/parseData";
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.patch(
     '/update-my-profile',
     auth(USER_ROLE.admin, USER_ROLE.user),
     image_Upload.single('image'),
+    parseData(),
     userController.updateProfile,
 );
 
