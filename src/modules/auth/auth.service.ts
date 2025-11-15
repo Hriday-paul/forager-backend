@@ -212,7 +212,12 @@ const socialLogin = async ({ email, image, first_name, lat, long }: { email: str
             throw new AppError(httpStatus.FORBIDDEN, 'Your account is deleted');
         }
 
-        user = await User.findOneAndUpdate({ email }, { email, image, first_name, isverified: true, isSocialLogin: true, lat: lat, long }, { upsert: true, new: true }) as IUser;
+        const body : any = {email, first_name, isverified: true, isSocialLogin: true, lat: lat, long}
+        if(!user){
+            body.image = image
+        }
+
+        user = await User.findOneAndUpdate({ email }, body, { upsert: true, new: true }) as IUser;
     }
 
     const userDoc = (user as any).toObject();
