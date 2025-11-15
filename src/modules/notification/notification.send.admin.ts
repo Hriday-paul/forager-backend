@@ -5,7 +5,7 @@ import { User } from "../user/user.models";
 
 export interface IAdminSendNotificationPayload {
   sender: ObjectId;
-  type?: "text" | "accept" | "reject" | "cancelled" | "payment";
+  type?: "text" | "accept" | "reject" | "cancelled" | "payment" | "product";
   title: string;
   message: string;
   link?: string;
@@ -20,16 +20,21 @@ export const sendAdminNotifications = async (
     isDeleted: false,
   }).select("fcmToken email _id");
 
-  if (admin?.fcmToken) {
-    sendNotification([admin.fcmToken], {
-      sender: payload.sender,
-      receiver: admin?._id as any,
-      receiverEmail: admin?.email,
-      receiverRole: "admin",
-      title: payload.title,
-      message: payload.message,
-      type: payload.type as any,
-      link: payload.link,
-    });
+  if (!admin) {
+    return;
   }
+
+  const fcmToken = admin?.fcmToken ? [admin?.fcmToken] : []
+
+  sendNotification(fcmToken, {
+    sender: payload.sender,
+    receiver: admin?._id as any,
+    receiverEmail: admin?.email,
+    receiverRole: "admin",
+    title: payload.title,
+    message: payload.message,
+    type: payload.type as any,
+    link: payload.link,
+  });
+
 };

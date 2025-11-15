@@ -5,6 +5,7 @@ import { User } from "../user/user.models";
 import { IProduct } from "./products.interface";
 import { Products } from "./products.model";
 import httpStatus from 'http-status'
+import { ObjectId as MongooseId } from "mongoose"
 import { ObjectId } from "mongodb"
 import { IUser } from "../user/user.interface";
 
@@ -22,6 +23,8 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
 
     const search = query?.searchTerm || "";
     const category = query?.category || null;
+    const colors = query?.colors || null;
+    const sizes = query?.sizes || null;
 
 
     const filters: any = {
@@ -30,6 +33,9 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
     };
 
     if (category) filters.category = category;
+
+    if (sizes) filters.sizes = { $in: sizes.split(",") };
+    if (colors) filters.colors = { $in: colors.split(",") };
 
     const hasMin = query?.min !== undefined && query?.min !== null;
     const hasMax = query?.max !== undefined && query?.max !== null;
@@ -42,7 +48,48 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
         filters.price = { $lte: Number(query.max) };
     }
 
+
+
+    // let geonear : any = {}
+    // const user = await User.findOne({ _id: userId });
+
+    // if (!user) {
+    //     throw new AppError(
+    //         httpStatus.NOT_FOUND,
+    //         'User not found',
+    //     );
+    // }
+
+    // const userLocation: { type: "Point"; coordinates: [number, number] } = {
+    //     type: "Point",
+    //     coordinates: user?.location?.coordinates as [number, number] || [], // [longitude, latitude]
+    // };
+
+    // if (user?.location?.coordinates?.length == 2) {
+    //     geonear = {
+    //         $geoNear: {
+    //             near: { type: "Point", coordinates: userLocation },
+    //             distanceField: "store.distance",
+    //             maxDistance: 50000,
+    //             spherical: true,
+    //             key: "store.location",
+    //         },
+    //     }
+    // }
+
     const products = await Products.aggregate([
+        {
+            $lookup: {
+                from: "stores",
+                localField: "store",
+                foreignField: "_id",
+                as: "store"
+            }
+        },
+        { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+
+        // {...geonear},
+
         // 1. Match by filters
         { $match: filters },
 
@@ -105,16 +152,6 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
 
         {
             $lookup: {
-                from: "stores",
-                localField: "store",
-                foreignField: "_id",
-                as: "store"
-            }
-        },
-        { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
-
-        {
-            $lookup: {
                 from: "brands",
                 let: { brandId: "$brand" },
                 pipeline: [
@@ -133,6 +170,7 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
                 as: "brand"
             }
         },
+
         {
             $addFields: {
                 brand: {
@@ -165,6 +203,7 @@ const allProducts = async (query: Record<string, any>, userId: string) => {
                 as: "favouriteStatus"
             }
         },
+
         {
             $addFields: {
                 isFavourite: { $gt: [{ $size: "$favouriteStatus" }, 0] }
@@ -325,8 +364,6 @@ const myProducts = async (query: Record<string, any>, userId: string) => {
 
 const singleProduct = async (productId: string, userId: string) => {
 
-    await Products.updateOne({ _id: productId }, { $inc: { total_views: 1 } });
-
     const product = await Products.aggregate([
 
         { $match: { _id: new ObjectId(productId), isDeleted: false } },
@@ -476,7 +513,6 @@ const singleProduct = async (productId: string, userId: string) => {
         { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } }
     ]);
 
-
     if (!product[0]) {
         throw new AppError(
             httpStatus.NOT_FOUND,
@@ -484,7 +520,30 @@ const singleProduct = async (productId: string, userId: string) => {
         );
     }
 
-    return product[0]
+    AddNewRecentViewProd(productId, userId);
+
+    return product[0];
+}
+
+const AddNewRecentViewProd = async (productId: string, userId: string) => {
+    const user = await User.findById(userId);
+
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+
+    let recentViewProds = user.recentViews.filter(
+        (item) => item.product.toString() !== productId
+    );
+
+    recentViewProds.unshift({
+        product: productId as unknown as MongooseId,
+        viewAt: new Date(),
+    });
+
+    if (recentViewProds.length > 10) {
+        recentViewProds = recentViewProds.slice(0, 10);
+    }
+
+    await User.updateOne({ _id: userId }, { $set: { recentViews: recentViewProds } })
 }
 
 const storeProducts = async (query: Record<string, any>, storeId: string) => {
@@ -891,6 +950,15 @@ const listingCount = async (userId: string) => {
     return res;
 }
 
+const recentViewProducts = async (userId: string) => {
+
+    const user = await User.findById(userId).populate("recentViews.product");
+
+    if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+
+    return user?.recentViews;
+}
+
 export const productService = {
     addProduct,
     allProducts,
@@ -903,5 +971,6 @@ export const productService = {
     sendNotificationAfterAddProduct,
     couldNotFindReq,
     boughtReq,
-    listingCount
+    listingCount,
+    recentViewProducts
 }

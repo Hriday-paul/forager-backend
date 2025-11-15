@@ -20,11 +20,17 @@ export interface IUser {
   address: string,
   date_of_birth: string,
   bio: string,
-  location : {type : string, coordinates : number[]}
+  location: { type: string, coordinates: number[] }
 
   isOnline: boolean;
   fcmToken?: string;
-  notification : boolean,
-  isSocialLogin : boolean
+  notification: boolean,
+  isSocialLogin: boolean
+
+  recentViews : IRecentViewProd[]
 }
 
+export interface IRecentViewProd {
+  product: ObjectId,
+  viewAt: Date
+}

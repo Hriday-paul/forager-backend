@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { ObjectId, Types } from "mongoose";
 import AppError from "../../error/AppError";
 import { User } from "../user/user.models";
 import { IStore } from "./store.interface";
@@ -6,6 +6,7 @@ import { Stores } from "./store.model";
 import httpStatus from "http-status";
 import QueryBuilder from "../../builder/QueryBuilder";
 import { sendNotification } from "../notification/notification.utils";
+import { sendAdminNotifications } from "../notification/notification.send.admin";
 
 const createStore = async (payload: IStore, userId: string) => {
 
@@ -22,6 +23,13 @@ const createStore = async (payload: IStore, userId: string) => {
     }
 
     const store = await Stores.create({ ...more_payloads, user: userId })
+
+    await sendAdminNotifications({
+        sender: userId as unknown as ObjectId,
+        type: "text",
+        title: "New store account requested",
+        message: "New store account requested from user. Please, verify it & approve or reject it.",
+    })
 
     return store;
 }

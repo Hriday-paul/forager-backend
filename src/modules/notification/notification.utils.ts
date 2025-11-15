@@ -15,73 +15,73 @@ export const sendNotification = async (
   fcmToken: string[],
   payload: INotification
 ): Promise<unknown> => {
+
   try {
-    const response = await admin.messaging().sendEachForMulticast({
-      tokens: fcmToken,
-      notification: {
-        title: payload.title,
-        body: payload.message,
-      },
-      android: {
-        notification: {
-          icon: "http://10.10.10.9:3000/logo.png",
-          imageUrl: "http://10.10.10.9:3000/logo.png",
-          clickAction: 'notification'
-        }
-      },
-      apns: {
-        headers: {
-          "apns-push-type": "alert",
-        },
-        fcmOptions: {
-          imageUrl: 'http://10.10.10.9:3000/logo.png'
-        },
-        payload: {
-          aps: {
-            badge: 1,
-            sound: "default",
-          },
-        },
-      },
-      webpush: {
-        headers: {
-          image: 'http://10.10.10.9:3000/logo.png'
-        }
-      },
-    });
 
     // If notifications were successfully sent, log them in the database
-    if (response?.successCount > 0) {
-      await Promise.all(
-        fcmToken.map((token) =>
-          Notification.create({
-            sender: payload?.sender,
-            receiver: payload?.receiver,
-            receiverEmail: payload?.receiverEmail,
-            receiverRole: payload?.receiverRole,
-            title: payload.title,
-            link: payload?.link || null,
-            message: payload?.message,
-            type: payload?.type,
-          })
-        )
-      );
+    const res = await Notification.create({
+      sender: payload?.sender,
+      receiver: payload?.receiver,
+      receiverEmail: payload?.receiverEmail,
+      receiverRole: payload?.receiverRole,
+      title: payload.title,
+      link: payload?.link || null,
+      message: payload?.message,
+      type: payload?.type,
+    })
+
+    if (fcmToken.length > 0) {
+      const response = await admin.messaging().sendEachForMulticast({
+        tokens: fcmToken,
+        notification: {
+          title: payload.title,
+          body: payload.message,
+        },
+        android: {
+          notification: {
+            icon: "http://10.10.10.9:3000/logo.png",
+            imageUrl: "http://10.10.10.9:3000/logo.png",
+            clickAction: 'notification'
+          }
+        },
+        apns: {
+          headers: {
+            "apns-push-type": "alert",
+          },
+          fcmOptions: {
+            imageUrl: 'http://10.10.10.9:3000/logo.png'
+          },
+          payload: {
+            aps: {
+              badge: 1,
+              sound: "default",
+            },
+          },
+        },
+        webpush: {
+          headers: {
+            image: 'http://10.10.10.9:3000/logo.png'
+          }
+        },
+      });
+
+      if (response?.failureCount > 0) {
+        response.responses.forEach((res, index) => {
+          if (!res.success) {
+            console.error(
+              `FCM error for token at index ${index}: ${JSON.stringify(
+                res.error
+              )}`
+            );
+          }
+        });
+      }
     }
 
     // Log any individual token failures
-    if (response?.failureCount > 0) {
-      response.responses.forEach((res, index) => {
-        if (!res.success) {
-          console.error(
-            `FCM error for token at index ${index}: ${JSON.stringify(
-              res.error
-            )}`
-          );
-        }
-      });
-    }
 
-    return response;
+
+    return {};
   } catch (error: any) {
 
     // Handle specific Firebase third-party auth error
@@ -105,7 +105,6 @@ export const sendMultipleNotification = async (
   { title, message }: { title: string, message: string }
 ): Promise<unknown> => {
   try {
-
     if (fcmToken.length <= 0) {
       throw new AppError(
         httpStatus.NOT_FOUND,

@@ -12,7 +12,6 @@ export const addProductValidator = [
   check('colors').trim().isArray(),
   check('sub_category').trim().isString(),
   check('brand').trim().isMongoId().withMessage("brand invalid"),
-
 ]
 
 export const productQueryChecker = [

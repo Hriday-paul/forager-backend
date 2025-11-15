@@ -15,7 +15,7 @@ const verifyOtp = async (token: string, otp: string | number) => {
     throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized');
   }
   let decode;
- 
+
   try {
     decode = jwt.verify(
       token,
@@ -50,7 +50,7 @@ const verifyOtp = async (token: string, otp: string | number) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'OTP did not match');
   }
 
-  const  updateUser = await User.findByIdAndUpdate(
+  const updateUser = await User.findByIdAndUpdate(
     user?._id,
     {
       $set: {
@@ -89,18 +89,18 @@ const resendOtp = async (email: string) => {
   const expiresAt = moment().add(3, 'minute');
 
   const updateOtp = await User.findByIdAndUpdate(
-      user?._id,
-      {
-        $set: {
-          verification: {
-            otp,
-            expiresAt,
-            status: false,
-          },
+    user?._id,
+    {
+      $set: {
+        verification: {
+          otp,
+          expiresAt,
+          status: false,
         },
       },
-      { new: true },
-    );
+    },
+    { new: true },
+  );
 
   if (!updateOtp) {
     throw new AppError(
@@ -119,8 +119,10 @@ const resendOtp = async (email: string) => {
   });
 
   const otpEmailPath = path.join(
-    __dirname,
-    '../../../public/view/otp_mail.html',
+    process.cwd(),
+    'public',
+    'view',
+    'otp_mail.html'
   );
 
   if (user) {

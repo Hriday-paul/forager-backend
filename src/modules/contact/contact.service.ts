@@ -10,11 +10,12 @@ import { Contact } from './contact.models';
 import config from '../../config';
 
 const createContact = async (payload: Icontact) => {
-
   const emailPath = path.join(
-    __dirname,
-    '../../../public/view/supportEmail.html',
-  );
+  process.cwd(),
+  'public',
+  'view',
+  'supportEmail.html'
+);
   // If 'isApproved' is set to true, send an email
   await sendEmail(
     config.nodemailer_host_email!,
@@ -49,11 +50,14 @@ const replyContact = async (id: string, message: string) => {
   if (contact?.isReplied) {
     throw new AppError(httpStatus.FORBIDDEN, 'You already replied to this message. Please, continue with email');
   }
-
+  
   const emailPath = path.join(
-    __dirname,
-    '../../../public/view/reply_email.html',
-  );
+  process.cwd(),
+  'public',
+  'view',
+  'reply_email.html'
+);
+
   // If 'isApproved' is set to true, send an email
   await sendEmail(
     contact?.email,

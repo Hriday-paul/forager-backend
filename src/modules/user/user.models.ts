@@ -1,8 +1,17 @@
 import { Schema, model, Model } from 'mongoose';
-import { IUser } from './user.interface';
+import { IRecentViewProd, IUser } from './user.interface';
 
-
-export interface UserModel extends Model<IUser> { }
+const recentViewSchema: Schema<IRecentViewProd> = new Schema({
+  product: {
+    type: Schema.Types.ObjectId,
+    ref: "products",
+    required: true,
+  },
+  viewAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 // Mongoose schema definition
 const userSchema: Schema<IUser> = new Schema(
@@ -104,6 +113,7 @@ const userSchema: Schema<IUser> = new Schema(
         required: true,
       },
     },
+    recentViews: [recentViewSchema],
   },
   {
     timestamps: true,
@@ -114,4 +124,4 @@ const userSchema: Schema<IUser> = new Schema(
 
 
 // User model creation
-export const User = model<IUser, UserModel>('users', userSchema);
+export const User = model<IUser>('users', userSchema);

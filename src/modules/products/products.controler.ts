@@ -174,6 +174,17 @@ const listingCount = catchAsync(async (req, res) => {
     });
 });
 
+const recentViewProducts = catchAsync(async (req, res) => {
+    
+    const result = await productService.recentViewProducts(req?.user?._id)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Recent Views products fetched successfully',
+        data: result,
+    });
+})
+
 export const productControler = {
     addProduct,
     allProducts,
@@ -186,5 +197,6 @@ export const productControler = {
     getMostFavouriteProductsByStore,
     singleProduct,
     sendNotificationAfterAddProduct,
-    listingCount
+    listingCount,
+    recentViewProducts
 }

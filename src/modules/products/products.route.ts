@@ -25,6 +25,8 @@ router.get('/store-products/:id', productControler.storeProducts);
 router.get('/store-popular-products/:id', productControler.getMostFavouriteProductsByStore);
 router.get('/listing-count', auth(USER_ROLE.user), productControler.listingCount);
 
+router.get('/recent-views', auth(USER_ROLE.user), productControler.recentViewProducts);
+
 router.get('/:id', auth(USER_ROLE.user, USER_ROLE.admin), productControler.singleProduct);
 
 router.patch(

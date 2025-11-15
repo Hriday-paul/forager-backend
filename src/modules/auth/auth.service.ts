@@ -11,7 +11,6 @@ import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
 import { generateOtp } from "../../utils/otpGenerator"
 import moment from "moment"
 import { sendEmail } from "../../utils/mailSender"
-import { sendAdminNotifications } from "../notification/notification.send.admin"
 import { sendNotification } from "../notification/notification.utils"
 
 
@@ -100,8 +99,8 @@ const loginUser = async (payload: { email: string, password: string, fcmToken?: 
         const tokenToUse = payload.fcmToken || user?.fcmToken;
 
         // Send notification if FCM token exists and user notification is unabled
-        if (tokenToUse && user.notification) {
-            sendNotification([tokenToUse], {
+        if (user.notification) {
+            sendNotification(tokenToUse ? [tokenToUse] : [], {
                 title: `Login successfully`,
                 message: `New user login to your account`,
                 receiver: updatedUser._id,
@@ -311,16 +310,18 @@ const forgotPassword = async (email: string) => {
         },
     });
 
-    const otpEmailPath = path.join(
-        __dirname,
-        '../../../public/view/forgot_pass_mail.html',
+    const emailPath = path.join(
+        process.cwd(),
+        'public',
+        'view',
+        'forgot_pass_mail.html'
     );
 
     await sendEmail(
         user?.email,
         'Your reset password OTP is',
         fs
-            .readFileSync(otpEmailPath, 'utf8')
+            .readFileSync(emailPath, 'utf8')
             .replace('{{otp}}', otp)
             .replace('{{email}}', user?.email),
     );
