@@ -1,4 +1,4 @@
-import { check } from "express-validator";
+import { check, query } from "express-validator";
 
 export const createStoreValidator = [
     check('name').trim().not().isEmpty().withMessage('Store name is required').isString().withMessage('Store name should be string').isLength({ min: 1 }).withMessage('Store name min length is 1'),
@@ -11,4 +11,10 @@ export const createStoreValidator = [
 
     check('location.coordinates.*')
         .isFloat().withMessage('each coordinate must be a number'),
+]
+
+export const neaMeStoreValidator = [
+
+    query("long").trim().not().isEmpty().withMessage('long is required').isFloat().withMessage("long invalid"),
+    query("lat").trim().not().isEmpty().withMessage('lat is required').isFloat().withMessage("lat invalid"),
 ]

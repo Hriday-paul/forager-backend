@@ -201,23 +201,17 @@ const storeDetails = async (storeId: string) => {
     return res?.length > 0 ? res[0] : {};
 }
 
-const nearMeStores = async (userId: string) => {
-    const user = await User.findOne({ _id: userId });
+const nearMeStores = async (query: Record<string, any>) => {
+    const lat = query?.lat;
+    const long = query?.long;
 
-    if (!user) {
-        throw new AppError(
-            httpStatus.NOT_FOUND,
-            'User not found',
-        );
-    }
-
-    if (user?.location?.coordinates?.length < 2) {
-        return [];
+    if (!lat || !long) {
+        return []
     }
 
     const userLocation: { type: "Point"; coordinates: [number, number] } = {
         type: "Point",
-        coordinates: user?.location?.coordinates as [number, number], // [longitude, latitude]
+        coordinates: [Number(long), Number(lat)], // [longitude, latitude]
     };
 
     const stores = await Stores.aggregate([

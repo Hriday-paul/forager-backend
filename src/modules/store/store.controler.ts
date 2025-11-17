@@ -72,7 +72,7 @@ const storeDetails = catchAsync(async (req, res) => {
 
 })
 const nearMeStores = catchAsync(async (req, res) => {
-    const result = await storeService.nearMeStores(req.user._id)
+    const result = await storeService.nearMeStores(req.query)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
